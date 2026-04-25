@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ログイン</title>
+</head>
+<body>
+     <form action="/login" method="post" onsubmit="setLoginFlag()">
+    <h1>ログイン</h1>  
+    {% if error %}
+    <p style="color:red;">{{ error }}</p>
+    {% endif %}  
+        <input type="text" name="username" placeholder="ログインID" required>
+        <input type="password" name="password" placeholder="ログインPW" required>
+        <button type="submit">ログイン</button>
+    </form>
+
+    <a href="/users">新規登録</a>
+    <a href="/">戻る</a>
+    <script>
+        function setLoginFlag() {
+            sessionStorage.setItem("loggedin", "true");
+        }
+    </script>
+</body>

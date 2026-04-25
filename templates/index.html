@@ -1,0 +1,36 @@
+<!--{{ __file__ }}-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ToDo App</title>
+</head>
+<body>
+    <h1>ToDo List</h1>
+
+    <form action="/add" method="post">
+        <input type="text" name="title" placeholder="タスク名" required>
+        <input type="date" name="deadline">
+        <button type="submit">追加</button>
+    </form>
+
+    <ul>
+        {% for t in todos %}
+            <li>
+                <strong>{{ t.title }}</strong>
+                {% if t.deadline %}
+                    （期限: {{ t.deadline }}）
+                {% endif %}
+                <a href="/edit/{{ loop.index0 }}">編集</a>
+                <a href="/delete/{{ loop.index0 }}">削除</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="/logout">ログアウト</a>
+     <script>
+        if (!sessionStorage.getItem("loggedin")) {
+            window.location.href = "/login";
+        }
+    </script>
+</body>
+</html>

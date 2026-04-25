@@ -1,0 +1,20 @@
+<h1>ユーザ管理</h1>
+
+<form method="post">
+    <input type="text" name="username" placeholder="ユーザID" required>
+    <input type="password" name="password" placeholder="パスワード" required>
+    <button type="submit">追加</button>
+</form>
+
+<hr>
+
+<ul>
+{% for u in users %}
+    <li>
+        {{ u.username }}
+        <a href="/users/delete/{{ u.id }}">削除</a>
+    </li>
+{% endfor %}
+</ul>
+
+<a href="/">戻る</a>
