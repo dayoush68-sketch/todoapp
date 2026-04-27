@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, session
-from AppDB import db, User
+from AppDB import db, User, ToDo
 import os
 
 
@@ -18,10 +18,10 @@ with app.app_context():
 
 # タスクは辞書形式で保存
 # { "title": "買い物", "deadline": "2024-05-01" }
-todos = []
+#todos = []
 # ログインは辞書形式で保存
 # { "id": "ログイン", "パスワード": "password" }
-logins = []
+#logins = []
 
 
 @app.route("/users", methods=["GET", "POST"])
@@ -86,42 +86,43 @@ def logout():
 def index():
     if "user" not in session:
         return redirect("/login")
-
-    return render_template("index.html", todos=todos)
+    todos  = ToDo.query.all()
+    return render_template("index.html", todos = todos)
 
 @app.route("/add", methods=["POST"])
 def add():
     title = request.form.get("title")
     deadline = request.form.get("deadline")
 
-    if title:
-        todos.append({"title": title, "deadline": deadline})
 
+    new_todo = ToDo(title=title, deadline = deadline)
+    db.session.add(new_todo)
+    db.session.commit()
     return redirect("/")
 
 @app.route("/delete/<int:index>")
 def delete(index):
-    if 0 <= index < len(todos):
-        todos.pop(index)
+    if 0 <= index < len(ToDo):
+        ToDo.pop(index)
     return redirect("/")
 
 
 @app.route("/edit/<int:index>")
 def edit(index):
     print("EDIT FUNCTION CALLED, index =", index)
-    print("TODO DATA =", todos[index])
-    print("TYPE =", type(todos[index]))
-    if 0 <= index < len(todos):
+    print("TODO DATA =", ToDo[index])
+    print("TYPE =", type(ToDo[index]))
+    if 0 <= index < len(ToDo):
         print("Rendering edit.html")
-        return render_template("edit.html", index=index, todo=todos[index])
+        return render_template("edit.html", index=index, todo=ToDo[index])
     print("Redirecting to /")
     return redirect("/")
 
 @app.route("/update/<int:index>", methods=["POST"])
 def update(index):
-    if 0 <= index < len(todos):
-        todos[index]["title"] = request.form.get("title")
-        todos[index]["deadline"] = request.form.get("deadline")
+    if 0 <= index < len(ToDo):
+        ToDo[index]["title"] = request.form.get("title")
+        ToDo[index]["deadline"] = request.form.get("deadline")
     return redirect("/")
 
 if __name__ == "__main__":
