@@ -15,15 +15,11 @@
     </form>
 
     <ul>
-        {% for t in todos %}
-            <li>
-                <strong>{{ t.title }}</strong>
-                {% if t.deadline %}
-                    （期限: {{ t.deadline }}）
-                {% endif %}
-                <a href="/edit/{{ loop.index0 }}">編集</a>
-                <a href="/delete/{{ loop.index0 }}">削除</a>
-            </li>
+        {% for todo in todos %}   
+          <p>
+           {{ todo.title }} - {{ todo.deadline }}
+           <a href="/delete/{{ todo.id }}">削除</a>
+          </p>
         {% endfor %}
     </ul>
     <a href="/logout">ログアウト</a>

@@ -16,6 +16,6 @@ class User(db.Model):
     
 class ToDo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(50), unique=True, nullable=False)
+    title = db.Column(db.String(50), unique=False, nullable=False)
     deadline = db.Column(db.String(100), nullable=False)
 

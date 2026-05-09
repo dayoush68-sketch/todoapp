@@ -100,11 +100,16 @@ def add():
     db.session.commit()
     return redirect("/")
 
-@app.route("/delete/<int:index>")
-def delete(index):
-    if 0 <= index < len(ToDo):
-        ToDo.pop(index)
-    return redirect("/")
+@app.route("/delete/<int:todo_id>")
+def delete(todo_id):
+  print("削除しようとしているID:", todo_id)
+  todo = ToDo.query.get(todo_id)
+  print("取得したtodo:", todo)
+  if todo is None:
+      return redirect("/") 
+  db.session.delete(todo)
+  db.session.commit()
+  return redirect("/")
 
 
 @app.route("/edit/<int:index>")
