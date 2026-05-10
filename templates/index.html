@@ -19,6 +19,7 @@
           <p>
            {{ todo.title }} - {{ todo.deadline }}
            <a href="/delete/{{ todo.id }}">削除</a>
+           <a href="/edit/{{todo.id}}">編集</a>
           </p>
         {% endfor %}
     </ul>

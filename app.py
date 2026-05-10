@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, session
-from AppDB import db, User, ToDo
+from AppDB import db
 import os
 
 
@@ -13,8 +13,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
 
-with app.app_context():
-    db.create_all()
+from AppDB import User, ToDo
 
 # タスクは辞書形式で保存
 # { "title": "買い物", "deadline": "2024-05-01" }
@@ -86,22 +85,27 @@ def logout():
 def index():
     if "user" not in session:
         return redirect("/login")
-    todos  = ToDo.query.all()
+    users = User.query.filter_by(username=session["user"]).first()
+    todos = ToDo.query.filter_by(user_id=users.id).all()
     return render_template("index.html", todos = todos)
 
 @app.route("/add", methods=["POST"])
 def add():
+    if "user" not in session:
+        return redirect("/login")
     title = request.form.get("title")
     deadline = request.form.get("deadline")
 
-
-    new_todo = ToDo(title=title, deadline = deadline)
+    users = User.query.filter_by(username=session["user"]).first()
+    new_todo = ToDo(title=title, deadline = deadline, user_id=users.id)
     db.session.add(new_todo)
     db.session.commit()
     return redirect("/")
 
 @app.route("/delete/<int:todo_id>")
 def delete(todo_id):
+  if "user" not in session:
+        return redirect("/login")
   print("削除しようとしているID:", todo_id)
   todo = ToDo.query.get(todo_id)
   print("取得したtodo:", todo)
@@ -112,25 +116,35 @@ def delete(todo_id):
   return redirect("/")
 
 
-@app.route("/edit/<int:index>")
-def edit(index):
-    print("EDIT FUNCTION CALLED, index =", index)
-    print("TODO DATA =", ToDo[index])
-    print("TYPE =", type(ToDo[index]))
-    if 0 <= index < len(ToDo):
-        print("Rendering edit.html")
-        return render_template("edit.html", index=index, todo=ToDo[index])
-    print("Redirecting to /")
-    return redirect("/")
+@app.route("/edit/<int:edit_id>", methods=["GET"])
+def edit(edit_id):
+   if "user" not in session:
+        return redirect("/login")
+   print("編集しようとしているToDo:", edit_id)
+   todo = ToDo.query.get(edit_id)
+   print("編集したToDo:", edit_id)
+   if todo is None:
+        return redirect("/")
+   
+   return render_template("edit.html", todo = todo)
 
-@app.route("/update/<int:index>", methods=["POST"])
-def update(index):
-    if 0 <= index < len(ToDo):
-        ToDo[index]["title"] = request.form.get("title")
-        ToDo[index]["deadline"] = request.form.get("deadline")
-    return redirect("/")
+@app.route("/update/<int:edit_id>", methods=["POST"])
+def update(edit_id):
+   if "user" not in session:
+        return redirect("/login")
+   todo = ToDo.query.get(edit_id)
+   if todo is None:
+        return redirect("/")
+   
+   todo.title = request.form.get("title")
+   todo.deadline = request.form.get("deadline")
+
+   db.session.commit()
+   return redirect("/")
 
 if __name__ == "__main__":
+    with app.app_context():
+     db.create_all()
     app.run(debug=True)
 
 
