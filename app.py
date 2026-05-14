@@ -7,6 +7,7 @@ app = Flask(__name__,  template_folder="templates")
 app.secret_key = "zxcvqwed0412"
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 print("TEMPLATE FOLDER:", os.path.abspath(app.template_folder))
+print("DB PATH:", os.path.abspath("todo.db"))
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///todo.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -47,6 +48,30 @@ def users():
     users = User.query.all()
     return render_template("users.html", users=users)
 
+@app.route("/users/<username>")
+def user_page(username):
+    #ログインしていない場合はログイン画面に戻る。
+    if "user" not in session:
+        return redirect("/login")
+    
+    #現在のユーザを定義
+    current_user = User.query.filter_by(username=session["user"]).first()
+
+    #管理者以外は自分のページしか見れない
+    if current_user.username != username and not current_user.is_admin:
+        return "権限がありません", 403
+    
+    #表示対象のユーザを定義
+    target_user = User.query.filter_by(username=username).first()
+    if target_user is None:
+        return "ユーザが存在しません", 404
+    
+    #そのユーザのタスク一覧
+    user_todos = ToDo.query.filter_by(user_id = target_user.id).all()
+    return render_template("user_page.html",user=target_user, user_todos = user_todos)
+
+
+
 @app.route("/users/delete/<int:id>")
 def delete_user(id):
     user = User.query.get(id)
@@ -85,9 +110,9 @@ def logout():
 def index():
     if "user" not in session:
         return redirect("/login")
-    users = User.query.filter_by(username=session["user"]).first()
-    todos = ToDo.query.filter_by(user_id=users.id).all()
-    return render_template("index.html", todos = todos)
+    current_user = User.query.filter_by(username=session["user"]).first()
+    todos = ToDo.query.filter_by(user_id=current_user .id).all()
+    return render_template("index.html", todos = todos, username = current_user.username)
 
 @app.route("/add", methods=["POST"])
 def add():
